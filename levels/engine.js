@@ -260,7 +260,9 @@
         const pb=document.getElementById('progress-bar'); if(pb)pb.style.width='50%';
         const pl=document.getElementById('progress-label'); if(pl)pl.innerText='50%';
         const av=document.getElementById('mascot-avatar'); if(av)av.src=ASSETS.byteBook;
-        speak("Let's hack! Inspect the target and modify client-side controls.");
+        speak("Click me for hints or to skip! Inspect the target and modify client-side controls.");
+        // Init smart Byte assistant
+        if (typeof ByteLab !== 'undefined') ByteLab.initByteAssistant(state.world, state.level, state.mode);
         renderPlayPhase();
     };
 
