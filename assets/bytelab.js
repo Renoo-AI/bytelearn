@@ -524,14 +524,6 @@ const ByteLab = (function() {
                 <h2 class="bl-victory-title">${title}</h2>
                 <p class="bl-victory-sub">${subtitle}</p>
                 <div class="bl-xp-badge">+${xp} XP</div>
-                <div class="bl-detail-box">
-                    <h4>What you did</h4>
-                    <p>${what}</p>
-                </div>
-                <div class="bl-detail-box lesson">
-                    <h4>Security Lesson</h4>
-                    <p>${lesson}</p>
-                </div>
                 <div class="bl-victory-btns">
                     <button class="bl-btn-primary" id="bl-btn-next">Next Level →</button>
                     <button class="bl-btn-ghost" id="bl-btn-stay">Review</button>
@@ -636,11 +628,7 @@ const ByteLab = (function() {
             .bl-victory-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:900;background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:2px;letter-spacing:-1px}
             .bl-victory-sub{color:#94a3b8;font-size:.85rem;margin-bottom:12px}
             .bl-xp-badge{display:inline-block;background:rgba(255,215,0,.1);color:#FFD700;padding:5px 20px;border-radius:99px;font-weight:800;font-size:.95rem;margin-bottom:16px;border:1px solid rgba(255,215,0,.15)}
-            .bl-detail-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:14px 16px;margin-bottom:10px;text-align:left}
-            .bl-detail-box h4{font-size:.72rem;font-weight:800;color:#FFD700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
-            .bl-detail-box p{font-size:.78rem;color:#94a3b8;line-height:1.5}
-            .bl-detail-box.lesson h4{color:#6366f1}
-            .bl-victory-btns{display:flex;gap:8px;margin-top:16px}
+            .bl-victory-btns{display:flex;gap:8px;margin-top:8px}
             .bl-btn-primary,.bl-btn-retry,.bl-btn-ghost{flex:1;padding:13px 20px;border-radius:14px;font-weight:800;font-size:.85rem;border:none;cursor:pointer;transition:all .2s}
             .bl-btn-primary{background:linear-gradient(135deg,#FFD700,#FFA500);color:#0f0f23;box-shadow:0 4px 18px rgba(255,215,0,.15)}
             .bl-btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(255,215,0,.25)}

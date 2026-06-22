@@ -43,12 +43,9 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-main
 .btn-main{background:var(--primary);color:white;width:100%;padding:20px;border-radius:20px;font-weight:800;font-size:1.2rem;cursor:pointer;border:none;transition:all .2s}
 .btn-main:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(69,70,215,0.25)}
 
-/* Creative Loader & Shake Animation */
-.btn-main.loading { color: transparent; pointer-events: none; position: relative; }
-.btn-main.loading::after { content:''; position:absolute; left:50%; top:50%; width:24px; height:24px; margin:-12px 0 0 -12px; border:3px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.btn-main.denied { background: #f43f5e; color: white; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-@keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+	/* Button feedback */
+	.btn-main.denied { background: #f43f5e; color: white; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+	@keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
 
 /* Next Level Button */
 .btn-next { display:inline-block; margin-top:16px; background:#0070ba; color:white; padding:12px 24px; border-radius:16px; font-weight:700; text-decoration:none; cursor:pointer; border:none; transition:transform 0.2s; }
@@ -115,21 +112,17 @@ function speak(text, persist) {
 }
 
 function tryReveal() {
-  if (hasWon) return;
-  revealBtn.classList.add('loading');
-  setTimeout(() => {
-    revealBtn.classList.remove('loading');
-    revealBtn.classList.add('denied');
-    revealBtn.innerText = 'Not Approved';
-    mascot.src = BYTE_DETECTIVE;
-    speak('Access denied by the UI layer. But the UI is just an illusion. What controls visibility?', true);
-    setTimeout(() => {
-        revealBtn.classList.remove('denied');
-        revealBtn.innerText = 'Show Balance';
-        mascot.src = BYTE_HELLO;
-    }, 2500);
-  }, 1000);
-}
+	  if (hasWon) return;
+	  revealBtn.classList.add('denied');
+	  revealBtn.innerText = 'Access Denied';
+	  mascot.src = BYTE_DETECTIVE;
+	  speak('Access denied by the UI layer. But the UI is just an illusion. What controls visibility?', true);
+	  setTimeout(() => {
+	    revealBtn.classList.remove('denied');
+	    revealBtn.innerText = 'Show Balance';
+	    mascot.src = BYTE_HELLO;
+	  }, 2000);
+	}
 
 // Fade transition screen as soon as DOM is ready
 function fadeIn() { transition.style.opacity = '0'; }
