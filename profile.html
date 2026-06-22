@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ByteLab | Profile</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#f5f6fb;--text:#1d1d1f;--primary:#4546d7;--secondary:#86868b;--border:#e2e8f0;
+            --font-main:'Plus Jakarta Sans',sans-serif;
+        }
+        .dark {
+            --bg:#0a0a0f;--text:#e2e8f0;--secondary:#94a3b8;--border:#1e293b;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--bg);color:var(--text);font-family:var(--font-main);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px}
+        .card{background:var(--bg);width:100%;max-width:720px;padding:40px;border-radius:32px;box-shadow:0 10px 40px rgba(0,0,0,0.04);animation:fadeUp .6s ease-out;border:1px solid var(--border)}
+        .dark .card{background:#13131a}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+        .top-bar .logo-row{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+        .top-bar .logo-row img{width:32px;height:32px;object-fit:contain}
+        .top-bar .logo-row span{font-weight:800;font-size:1.4rem;letter-spacing:-0.03em}
+        .back-btn{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 16px;cursor:pointer;font-weight:700;font-size:.8rem;color:var(--secondary);text-decoration:none;transition:all .2s}
+        .back-btn:hover{border-color:var(--primary);color:var(--primary)}
+        .profile-header{text-align:center;margin-bottom:32px}
+        .avatar{width:80px;height:80px;border-radius:50%;object-fit:contain;margin:0 auto 16px;border:3px solid var(--primary);padding:4px;background:white}
+        .profile-header h1{font-weight:800;font-size:1.6rem}
+        .alias{color:var(--secondary);font-size:.9rem;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .alias-input{border:1px solid var(--border);background:var(--bg);padding:6px 12px;border-radius:8px;font-weight:600;font-size:.9rem;color:var(--text);text-align:center;outline:none;width:160px;font-family:var(--font-main)}
+        .alias-input:focus{border-color:var(--primary)}
+        .rank-badge{display:inline-block;background:var(--primary);color:white;padding:4px 16px;border-radius:99px;font-weight:700;font-size:.75rem;margin-top:8px}
+        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px}
+        .stat-card{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:20px;text-align:center}
+        .dark .stat-card{background:#1a1a24}
+        .stat-card .num{font-size:2rem;font-weight:800;color:var(--primary)}
+        .stat-card .label{font-size:.75rem;color:var(--secondary);font-weight:600;margin-top:4px}
+        .section-title{font-weight:800;font-size:1.1rem;margin-bottom:16px;text-align:left}
+        .world-breakdown{display:grid;gap:8px;margin-bottom:32px}
+        .world-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:12px 16px}
+        .dark .world-row{background:#1a1a24}
+        .world-row .name{font-weight:700;font-size:.85rem}
+        .world-row .bar-wrap{flex-grow:1;max-width:200px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin:0 16px}
+        .world-row .bar-fill{height:100%;background:var(--primary);border-radius:99px;transition:width .6s ease}
+        .world-row .count{font-size:.75rem;color:var(--secondary);font-weight:600}
+        .achievements{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+        .achievement{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600}
+        .dark .achievement{background:#1a1a24}
+        .achievement.unlocked{background:rgba(52,211,153,0.08);border-color:#34d399}
+        .achievement.locked{opacity:.35}
+        .achievement .ach-icon{font-size:1.3rem}
+        .btn-group{display:flex;gap:10px;margin-top:8px}
+        .btn{background:var(--primary);color:white;padding:14px 24px;border-radius:16px;font-weight:700;font-size:.9rem;border:none;cursor:pointer;transition:all .2s;text-decoration:none;text-align:center;flex:1}
+        .btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(69,70,215,0.25)}
+        .btn.ghost{background:var(--bg);color:var(--secondary);border:1px solid var(--border)}
+        .dark .btn.ghost{background:#1a1a24}
+        .btn.ghost:hover{box-shadow:none}
+        .theme-toggle{width:44px;height:24px;background:var(--border);border-radius:99px;position:relative;cursor:pointer;transition:background .3s;display:inline-block}
+        .dark .theme-toggle{background:var(--primary)}
+        .theme-toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:white;transition:left .3s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        .dark .theme-toggle::after{left:22px}
+        @media(max-width:640px){.card{padding:24px 16px;border-radius:24px}.stats-grid{grid-template-columns:1fr 1fr}}
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="top-bar">
+        <a href="game.html" class="logo-row">
+            <img src="assets/logo.png" alt="ByteLab">
+            <span>ByteLab</span>
+        </a>
+        <div style="display:flex;align-items:center;gap:12px">
+            <div class="theme-toggle" onclick="toggleTheme()" role="switch" aria-checked="true" aria-label="Toggle dark mode" tabindex="0"></div>
+            <a href="game.html" class="back-btn">← Back</a>
+        </div>
+    </div>
+    <div class="profile-header">
+        <img src="assets/byte-hello.png" class="avatar" id="avatarImg" alt="Avatar">
+        <h1>Hacker Profile</h1>
+        <div class="alias">
+            <input class="alias-input" id="aliasInput" placeholder="Enter alias..." maxlength="20" aria-label="Your alias">
+            <button onclick="saveAlias()" style="background:none;border:none;cursor:pointer;font-size:1rem" title="Save alias">✏️</button>
+        </div>
+        <div class="rank-badge" id="rankBadge">Recruit</div>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card"><div class="num" id="totalSolved">0</div><div class="label">Total Solved</div></div>
+        <div class="stat-card"><div class="num" id="attackSolved">0</div><div class="label">Red Team</div></div>
+        <div class="stat-card"><div class="num" id="defendSolved">0</div><div class="label">Blue Team</div></div>
+    </div>
+    <div class="section-title">World Progress</div>
+    <div class="world-breakdown" id="worldBreakdown"></div>
+    <div class="section-title">Achievements</div>
+    <div class="achievements" id="achievements"></div>
+    <div class="btn-group">
+        <a href="game.html" class="btn">Back to Hub</a>
+        <button class="btn ghost" onclick="resetAll()">Reset</button>
+    </div>
+</div>
+<script>
+    const RANKS = [
+        { min:0, name:'Recruit', icon:'🪖' },{ min:5, name:'Scripter', icon:'📜' },
+        { min:12, name:'Explorer', icon:'🔍' },{ min:22, name:'Hacker', icon:'💻' },
+        { min:35, name:'Elite', icon:'⭐' },{ min:48, name:'Architect', icon:'🏛️' }
+    ];
+    const ACHIEVEMENTS = [
+        { id:'first_blood', icon:'🩸', name:'First Blood', desc:'Solve 1 level', check:t=>t>=1 },
+        { id:'foot_in_door', icon:'🚪', name:'Foot in the Door', desc:'Solve 5 levels', check:t=>t>=5 },
+        { id:'red_october', icon:'⚔️', name:'Red October', desc:'10 attack levels', check:(t,a,d)=>a>=10 },
+        { id:'blue_shield', icon:'🛡️', name:'Blue Shield', desc:'10 defend levels', check:(t,a,d)=>d>=10 },
+        { id:'completionist', icon:'🏆', name:'Completionist', desc:'25 levels', check:t=>t>=25 },
+        { id:'world_tour', icon:'🌍', name:'World Tour', desc:'Completed in 6+ worlds', check:(t,a,d,w)=>w>=6 },
+        { id:'architect', icon:'🏛️', name:'Architect', desc:'55 levels', check:t=>t>=55 },
+        { id:'centurion', icon:'💯', name:'Centurion', desc:'100+ levels', check:t=>t>=100 },
+        { id:'dual_path', icon:'☯️', name:'Dual Path', desc:'10+ in both attack & defend', check:(t,a,d)=>a>=10&&d>=10 }
+    ];
+
+    const WORLD_NAMES = ['Discovery','PayPal','Netflix','Amazon','SpaceX','Airbnb','OpenAI','Teladoc','OpenSea','Tesla','FedEx'];
+
+    function getStats() {
+        let attackTotal=0, defendTotal=0;
+        const aWorlds={}, dWorlds={};
+        let worldsWithSol=0;
+        for(let w=0;w<=10;w++){
+            const keyA=`bytelab_attack_${w}`, keyD=`bytelab_defend_${w}`;
+            const legA=`bytelearn_attack_${w}`, legD=`bytelearn_defend_${w}`;
+            const legA2=`bl_solved_attack_${w}`, legD2=`bl_solved_defend_${w}`;
+            const leg3=`bl_w${w}`;
+            const a=[...new Set([
+                ...JSON.parse(localStorage.getItem(keyA)||'[]'),
+                ...JSON.parse(localStorage.getItem(legA)||'[]'),
+                ...JSON.parse(localStorage.getItem(legA2)||'[]'),
+                ...JSON.parse(localStorage.getItem(leg3)||'[]')
+            ])];
+            const d=[...new Set([
+                ...JSON.parse(localStorage.getItem(keyD)||'[]'),
+                ...JSON.parse(localStorage.getItem(legD)||'[]'),
+                ...JSON.parse(localStorage.getItem(legD2)||'[]')
+            ])];
+            aWorlds[w]=a.length; dWorlds[w]=d.length;
+            attackTotal+=a.length; defendTotal+=d.length;
+            if(a.length>0||d.length>0)worldsWithSol++;
+        }
+        return {attack:attackTotal,defend:defendTotal,total:attackTotal+defendTotal,aWorlds,dWorlds,worldsWithSol};
+    }
+
+    function getRank(total){
+        let r=RANKS[0];
+        for(const x of RANKS)if(total>=x.min)r=x;
+        return r;
+    }
+
+    function render(){
+        const s=getStats();
+        document.getElementById('totalSolved').innerText=s.total;
+        document.getElementById('attackSolved').innerText=s.attack;
+        document.getElementById('defendSolved').innerText=s.defend;
+        const rank=getRank(s.total);
+        document.getElementById('rankBadge').innerText=`${rank.icon} ${rank.name}`;
+        const bd=document.getElementById('worldBreakdown');
+        bd.innerHTML='';
+        for(let w=0;w<=10;w++){
+            const a=s.aWorlds[w]; const d=s.dWorlds[w];
+            const pct=Math.round(((a+d)/10)*100);
+            const row=document.createElement('div');
+            row.className='world-row';
+            row.innerHTML=`<span class="name">${w}. ${WORLD_NAMES[w]}</span><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div><span class="count">${a}⚔️ ${d}🛡️</span>`;
+            bd.appendChild(row);
+        }
+        const ac=document.getElementById('achievements');
+        ac.innerHTML='';
+        ACHIEVEMENTS.forEach(ach=>{
+            const unlocked=ach.check(s.total,s.attack,s.defend,s.worldsWithSol);
+            const el=document.createElement('div');
+            el.className='achievement'+(unlocked?' unlocked':' locked');
+            el.innerHTML=`<span class="ach-icon">${ach.icon}</span> ${ach.name}`;
+            el.title=ach.desc;
+            ac.appendChild(el);
+        });
+    }
+
+    function saveAlias(){
+        const val=document.getElementById('aliasInput').value.trim();
+        if(val)localStorage.setItem('bytelearn_alias',val);
+    }
+
+    function resetAll(){
+        if(!confirm('Reset ALL progress? This cannot be undone.'))return;
+        for(let w=0;w<=10;w++){
+            localStorage.removeItem(`bytelab_attack_${w}`);
+            localStorage.removeItem(`bytelab_defend_${w}`);
+            localStorage.removeItem(`bytelearn_attack_${w}`);
+            localStorage.removeItem(`bytelearn_defend_${w}`);
+            localStorage.removeItem(`bl_solved_attack_${w}`);
+            localStorage.removeItem(`bl_solved_defend_${w}`);
+            localStorage.removeItem(`bl_w${w}`);
+        }
+        localStorage.removeItem('bytelearn_alias');
+        render();
+    }
+
+    function toggleTheme(){
+        document.documentElement.classList.toggle('dark');
+        const isDark=document.documentElement.classList.contains('dark');
+        localStorage.setItem('bytelab_theme',isDark?'dark':'light');
+        document.querySelector('.theme-toggle').setAttribute('aria-checked',isDark);
+    }
+
+    const savedAlias=localStorage.getItem('bytelearn_alias');
+    if(savedAlias)document.getElementById('aliasInput').value=savedAlias;
+
+    const savedTheme=localStorage.getItem('bytelab_theme');
+    if(savedTheme==='light'){document.documentElement.classList.remove('dark');document.querySelector('.theme-toggle').setAttribute('aria-checked','false');}
+
+    render();
+</script>
+</body>
+</html>

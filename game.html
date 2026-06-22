@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ByteLab — Academy Map</title>
+    <meta name="description" content="Interactive cybersecurity training map with 110+ challenges across 11 worlds.">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc; --surface: #ffffff; --surface2: #f1f5f9;
+            --text: #0f172a; --muted: #64748b; --border: #e2e8f0;
+            --primary: #4546d7; --red-team: #e11d48; --blue-team: #2563eb;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        .dark {
+            --bg: #0a0a0f; --surface: #13131a; --surface2: #1a1a24;
+            --text: #e2e8f0; --muted: #94a3b8; --border: #1e293b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: var(--font-main); overflow: hidden; height: 100vh;
+        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        /* NAV */
+        nav {
+            height: 64px; padding: 0 24px; display: flex; align-items: center;
+            justify-content: space-between; background: var(--surface);
+            border-bottom: 1px solid var(--border); z-index: 50; position: relative;
+        }
+        .dark nav { background: rgba(19,19,26,0.95); backdrop-filter: blur(12px); }
+        @media (min-width: 768px) { nav { padding: 0 48px; } }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; color: var(--text); }
+        .nav-brand img { width: 28px; height: 28px; object-fit: contain; }
+        .nav-brand span { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.03em; }
+
+        /* Mode Toggle */
+        .mode-pill {
+            display: inline-flex; background: var(--surface2); padding: 3px;
+            border-radius: 99px; border: 1px solid var(--border);
+        }
+        .mode-btn {
+            padding: 7px 16px; border-radius: 99px; font-weight: 700; font-size: 0.78rem;
+            border: none; cursor: pointer; transition: all 0.2s;
+            background: transparent; color: var(--muted);
+        }
+        .mode-btn.active.attack { background: var(--red-team); color: white; }
+        .mode-btn.active.defend { background: var(--blue-team); color: white; }
+
+        /* Profile */
+        .profile-chip {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 99px; padding: 6px 16px 6px 6px;
+            cursor: pointer; transition: all 0.2s; text-decoration: none; color: var(--text);
+        }
+        .profile-chip:hover { border-color: var(--primary); }
+        .profile-chip img { width: 32px; height: 32px; border-radius: 50%; object-fit: contain; background: white; border: 1px solid var(--border); }
+        .profile-chip .name { font-weight: 800; font-size: 0.72rem; }
+        .profile-chip .rank { font-size: 0.6rem; font-weight: 700; color: var(--primary); }
+
+        .icon-btn {
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+            cursor: pointer; color: var(--muted); transition: all 0.2s;
+        }
+        .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* MAP */
+        .map-viewport {
+            flex: 1; position: relative; overflow: auto; cursor: grab; user-select: none;
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+        .map-viewport:active { cursor: grabbing; }
+        .map-viewport.grabbing { cursor: grabbing; }
+        .map-content { width: 2000px; height: 1100px; position: relative; }
+
+        /* Zoom Controls */
+        .zoom-controls {
+            position: fixed; bottom: 24px; right: 24px; z-index: 40;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .zoom-btn {
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+            cursor: pointer; font-size: 1.2rem; color: var(--text); transition: all 0.2s;
+            backdrop-filter: blur(8px);
+        }
+        .zoom-btn:hover { border-color: var(--primary); background: var(--surface2); }
+        .dark .zoom-btn { background: rgba(19,19,26,0.9); }
+
+        /* Search */
+        .search-bar {
+            position: fixed; top: 80px; right: 24px; z-index: 40; display: flex; gap: 8px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+            padding: 8px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .dark .search-bar { background: rgba(19,19,26,0.95); }
+        .search-bar input {
+            background: transparent; border: none; outline: none; color: var(--text);
+            font-size: 0.85rem; width: 160px; font-family: var(--font-main);
+        }
+        .search-bar input::placeholder { color: var(--muted); }
+
+        /* World Nodes */
+        .world-node {
+            position: absolute; width: 68px; height: 68px; border-radius: 50%;
+            background: var(--surface); border: 3px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; cursor: pointer; transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+            z-index: 2;
+        }
+        .world-node:hover { transform: scale(1.12); border-color: var(--primary); box-shadow: 0 8px 30px rgba(69,70,215,0.15); }
+        .world-node:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+        .world-node.active-selection { transform: scale(1.15); border-color: var(--theme-color, var(--primary)) !important; background: var(--surface2); }
+        .world-node.locked { filter: grayscale(1) opacity(0.45); border-style: dashed; cursor: not-allowed; }
+        .world-node.locked:hover { transform: none; box-shadow: none; }
+
+        .node-label {
+            position: absolute; top: 74px; left: 50%; transform: translateX(-50%);
+            background: var(--surface); border: 1px solid var(--border);
+            padding: 4px 10px; border-radius: 10px; font-weight: 800; font-size: 0.65rem;
+            white-space: nowrap; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            color: var(--muted); transition: all 0.25s; text-align: center;
+        }
+        .dark .node-label { background: #1a1a24; }
+        .world-node:hover .node-label,
+        .world-node.active-selection .node-label { border-color: var(--theme-color, var(--primary)); color: var(--theme-color, var(--primary)); }
+
+        /* SVG Connections */
+        .svg-connections { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+        .connection-path { stroke: var(--border); stroke-width: 3; fill: none; stroke-linecap: round; stroke-dasharray: 6 5; transition: all 0.4s ease; }
+        .connection-path.active { stroke: var(--theme-color, var(--primary)); stroke-dasharray: none; stroke-width: 3.5; }
+
+        /* Animation for active path */
+        @keyframes dashFlow { to { stroke-dashoffset: -22; } }
+        .connection-path.active { animation: dashFlow 1.5s linear infinite; }
+
+        /* Drawer */
+        .details-drawer {
+            position: fixed; top: 64px; bottom: 0; right: -440px; width: 420px;
+            background: var(--surface); border-left: 1px solid var(--border);
+            box-shadow: -10px 0 40px rgba(0,0,0,0.04); z-index: 30;
+            transition: right 0.4s cubic-bezier(0.16,1,0.3,1);
+            display: flex; flex-direction: column;
+        }
+        .details-drawer.open { right: 0; }
+        .dark .details-drawer { background: #13131a; }
+
+        .drawer-header {
+            padding: 20px 24px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .drawer-body { flex: 1; overflow-y: auto; padding: 24px; }
+
+        .close-btn {
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
+            background: transparent; color: var(--muted); font-size: 1.2rem; transition: all 0.2s;
+        }
+        .close-btn:hover { border-color: var(--red-team); color: var(--red-team); }
+
+        /* Level Row */
+        .lvl-row-btn {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+            padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
+            transition: all 0.2s; text-align: left; text-decoration: none; color: var(--text);
+        }
+        .lvl-row-btn:hover:not(.locked) { transform: translateY(-2px); border-color: var(--theme-color, var(--primary)); }
+        .lvl-row-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        .lvl-row-btn.locked { opacity: 0.4; background: var(--surface2); cursor: not-allowed; }
+        .lvl-row-btn.solved { border-color: #34d399; background: rgba(52,211,153,0.04); }
+
+        /* Modal */
+        .modal-bg {
+            position: fixed; inset: 0; background: rgba(15,23,42,0.2);
+            backdrop-filter: blur(6px); z-index: 100; display: none;
+            align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-bg.active { display: flex; opacity: 1; }
+        .modal-card {
+            background: var(--surface); border: 1px solid var(--border);
+            width: 90%; max-width: 420px; border-radius: 24px; padding: 32px;
+            transform: scale(0.95); transition: transform 0.3s ease;
+        }
+        .modal-bg.active .modal-card { transform: scale(1); }
+
+        .toggle-switch {
+            width: 44px; height: 26px; border-radius: 99px; background: var(--border);
+            position: relative; cursor: pointer; transition: background 0.2s;
+        }
+        .toggle-switch.on { background: #10b981; }
+        .toggle-switch::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 20px; height: 20px; border-radius: 50%; background: white;
+            transition: left 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+        .toggle-switch.on::after { left: 21px; }
+
+        /* Toast */
+        .toast-container {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            z-index: 200; display: flex; flex-direction: column; gap: 8px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--surface); border: 1px solid var(--border);
+            padding: 12px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08); pointer-events: auto;
+            animation: toastIn 0.3s ease forwards; display: flex; align-items: center; gap: 8px;
+        }
+        .toast.undo { cursor: pointer; }
+        .toast.undo .undo-link { color: var(--primary); font-weight: 800; cursor: pointer; text-decoration: underline; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Skeleton */
+        .skeleton { background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* Toast */
+        .world-complete-badge {
+            position: absolute; top: -8px; right: -8px; width: 22px; height: 22px;
+            background: #10b981; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 0.65rem; color: white; z-index: 3;
+            animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            nav { padding: 0 16px; height: 56px; }
+            .nav-brand span { display: none; }
+            .profile-chip .name, .profile-chip .rank { display: none; }
+            .mode-btn { padding: 6px 12px; font-size: 0.7rem; }
+            .details-drawer { width: 100%; right: -100%; }
+            .search-bar { top: 68px; right: 8px; }
+            .search-bar input { width: 100px; }
+            .zoom-controls { bottom: 16px; right: 16px; }
+            .world-node { width: 56px; height: 56px; font-size: 1.2rem; }
+            .node-label { top: 62px; font-size: 0.55rem; padding: 3px 8px; }
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <!-- NAV -->
+    <nav role="navigation" aria-label="Main navigation">
+        <a href="index.html" class="nav-brand" aria-label="ByteLab Home">
+            <img src="assets/logo.png" alt="ByteLab Logo">
+            <span>ByteLab</span>
+        </a>
+        <div class="mode-pill" role="radiogroup" aria-label="Game mode">
+            <button class="mode-btn active attack" id="mode-attack-btn" onclick="setMode('attack')" role="radio" aria-checked="true">Red Team</button>
+            <button class="mode-btn" id="mode-defend-btn" onclick="setMode('defend')" role="radio" aria-checked="false">Blue Team</button>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="profile.html" class="profile-chip" aria-label="View profile">
+                <img src="assets/byte-hello.png" alt="Avatar">
+                <div>
+                    <div class="name" id="profileName">Hacker</div>
+                    <div class="rank" id="profileRank">Recruit</div>
+                </div>
+            </a>
+            <button onclick="openSettings()" class="icon-btn" aria-label="Open settings" title="Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+            <button onclick="toggleTheme()" class="icon-btn" aria-label="Toggle dark mode" title="Toggle theme">
+                <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- SEARCH -->
+    <div class="search-bar" id="searchBar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search worlds..." oninput="filterWorlds()" aria-label="Search worlds">
+    </div>
+
+    <!-- MAP -->
+    <div class="map-viewport" id="mapViewport" role="application" aria-label="World map">
+        <div class="map-content" id="mapContent">
+            <svg class="svg-connections" id="svgCanvas" aria-hidden="true"></svg>
+        </div>
+    </div>
+
+    <!-- ZOOM CONTROLS -->
+    <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomMap(0.3)" aria-label="Zoom in" title="Zoom in">+</button>
+        <button class="zoom-btn" onclick="zoomMap(-0.3)" aria-label="Zoom out" title="Zoom out">−</button>
+        <button class="zoom-btn" onclick="resetZoom()" aria-label="Reset zoom" title="Reset view" style="font-size:0.7rem">⌂</button>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+    <!-- DRAWER -->
+    <div class="details-drawer" id="detailsDrawer" role="dialog" aria-label="World details" aria-hidden="true">
+        <div class="drawer-header">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl" id="drawerWorldIcon">🎓</span>
+                <div>
+                    <span class="text-[9px] font-extrabold uppercase tracking-wider opacity-50 block">Active World</span>
+                    <h2 class="font-extrabold text-base" id="drawerWorldName">Discovery</h2>
+                </div>
+            </div>
+            <button onclick="closeDrawer()" class="close-btn" aria-label="Close drawer">×</button>
+        </div>
+        <div class="drawer-body space-y-4">
+            <p class="opacity-60 text-xs leading-relaxed" id="drawerWorldDesc"></p>
+            <div class="flex items-center justify-between text-xs font-bold mt-3 mb-1">
+                <span>Progress</span>
+                <span id="drawerProgressText">0/5 Solved</span>
+            </div>
+            <div class="w-full h-2 bg-[var(--surface2)] rounded-full overflow-hidden border border-[var(--border)]">
+                <div class="h-full transition-all duration-500 rounded-full" id="drawerProgressBar" style="width:0%;background:var(--theme-color,var(--primary))"></div>
+            </div>
+            <div class="space-y-2.5 mt-4" id="drawerLevelsList"></div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div class="modal-bg" id="settingsModal" role="dialog" aria-label="Settings" aria-hidden="true">
+        <div class="modal-card">
+            <h3 class="font-extrabold text-lg mb-6">Settings & Controls</h3>
+            <div class="space-y-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-extrabold text-sm">Free Mode (Unlock All)</h4>
+                        <p class="text-xs opacity-50 mt-0.5">Bypass sequential progression</p>
+                    </div>
+                    <div class="toggle-switch" id="toggleUnlock" onclick="toggleSetting('unlock')" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-extrabold text-sm">Sound Effects</h4>
+                        <p class="text-xs opacity-50 mt-0.5">Play audio on interactions</p>
+                    </div>
+                    <div class="toggle-switch on" id="toggleSound" onclick="toggleSound()" role="switch" aria-checked="true" tabindex="0"></div>
+                </div>
+                <div class="border-t pt-5" style="border-color:var(--border)">
+                    <button onclick="resetProgress()" class="w-full py-3 rounded-2xl font-bold text-sm transition-all" style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.2)">Reset All Progress</button>
+                </div>
+            </div>
+            <button onclick="closeSettings()" class="w-full mt-5 py-3 rounded-2xl font-bold text-sm transition-all" style="background:var(--surface2);color:var(--text)">Close Panel</button>
+        </div>
+    </div>
+
+    <script>
+        // ── DATA ──────────────────────────────────────────────
+        const WORLDS = [
+            { id:0, name:'Discovery', desc:'Tutorial — learn the basics of DOM inspection and client-side manipulation', icon:'🎓', x:50, y:100 },
+            { id:1, name:'PayPal', desc:'Banking logic — bypass transfer locks, expose hidden balances, escalate roles', icon:'🏦', x:180, y:200 },
+            { id:2, name:'Netflix', desc:'Streaming auth — cookie escalation, overlay deletion, SSO redirect hijacking', icon:'🎬', x:310, y:400 },
+            { id:3, name:'Amazon', desc:'E-commerce validation — negative quantities, hidden taxes, coupon bypass', icon:'🛒', x:460, y:260 },
+            { id:4, name:'SpaceX', desc:'Access control — SSO spoofing, IP override, endpoint tampering', icon:'🚀', x:620, y:500 },
+            { id:5, name:'Airbnb', desc:'Scheduling exploits — reverse dates, NaN injections, seat tier desync', icon:'✈️', x:780, y:320 },
+            { id:6, name:'OpenAI', desc:'LLM injection — prompt leaks, temperature flood, system instruction swap', icon:'🤖', x:950, y:550 },
+            { id:7, name:'Teladoc', desc:'Patient data — prescription multiplier, glass backdrop, namespace scraping', icon:'🏥', x:1120, y:350 },
+            { id:8, name:'OpenSea', desc:'Web3 storage — cookie expansion, KYC injection, session wrapping', icon:'💎', x:1280, y:580 },
+            { id:9, name:'Tesla', desc:'IoT telemetry — grid deselection, DOM fabrication, endpoint divergence', icon:'⚡', x:1440, y:370 },
+            { id:10, name:'FedEx', desc:'Logistics security — customs valuation, event interception, route crawling', icon:'📦', x:1620, y:540 }
+        ];
+
+        const LEVELS = {
+            0:[{l:1,name:'Hidden View',desc:'Change display:none to display:block to reveal the hidden balance.'},{l:2,name:'Price Mod',desc:'Modify the price display in DevTools before clicking Upgrade.'},{l:3,name:'Lock Bypass',desc:'Remove disabled attribute and locked class from Transfer Funds button.'},{l:4,name:'Role Escalate',desc:'Change data-role from guest to admin on the app-shell element.'},{l:5,name:'System Context',desc:'Inspect initialization parameters to unlock navigation variables.'}],
+            1:[{l:1,name:'Disabled Bypass',desc:'Remove disabled attribute from Transfer Funds button.'},{l:2,name:'Pointer Lock',desc:'Remove locked CSS class blocking click events.'},{l:3,name:'Hidden Fee',desc:'Set hidden fee input to negative value for cashback.'},{l:4,name:'Invisible Balance',desc:'Remove display:none from real balance element.'},{l:5,name:'Role Escalation',desc:'Change data-role from member to admin.'}],
+            2:[{l:1,name:'Cookie Escalation',desc:'Set tier cookie to premium for streaming access.'},{l:2,name:'Overlay Deletion',desc:'Delete subscription-overlay div from DOM.'},{l:3,name:'SSO Redirect',desc:'Change Google SSO data-redirect to evil.com.'},{l:4,name:'Timer Abuse',desc:'Set trialSecondsRemaining to 999999.'},{l:5,name:'Prototype Pollution',desc:'Set Object.prototype.isAuthorized to true.'}],
+            3:[{l:1,name:'Negative Qty',desc:'Set quantity to negative to receive money.'},{l:2,name:'Free Shipping',desc:'Inject option value=0 into shipping select.'},{l:3,name:'Tax Override',desc:'Set hidden tax-rate value to 0.'},{l:4,name:'Coupon Bypass',desc:'Remove readonly and enter FREE100.'},{l:5,name:'Param Inject',desc:'Add hidden discount_value=500 input.'}],
+            4:[{l:1,name:'User ID Spoof',desc:'Set user_id cookie to 1 for admin access.'},{l:2,name:'IP Override',desc:'Set gatewayIp to 127.0.0.1.'},{l:3,name:'Endpoint Tamper',desc:'Change data-endpoint to /v1/admin/shutdown.'},{l:4,name:'Host Spoofing',desc:'Set originHeader to workspacex.com.'},{l:5,name:'Auth Bypass',desc:'Set localStorage auth_status to authorized.'}],
+            5:[{l:1,name:'Reverse Dates',desc:'Set checkout before checkin for negative stay.'},{l:2,name:'NaN Weight',desc:'Type NaN into luggage weight field.'},{l:3,name:'Seat Desync',desc:'Remove disabled and set data-tier to economy.'},{l:4,name:'Open Redirect',desc:'Change logo href to http://evil.com.'},{l:5,name:'Config Override',desc:'Set flightConfig.bypass_verification to true.'}],
+            6:[{l:1,name:'Prompt Leak',desc:'Make hidden system prompt element visible.'},{l:2,name:'Temp Flood',desc:'Set temperature value above 2.0.'},{l:3,name:'Stream Hijack',desc:'Remove .blur-response class.'},{l:4,name:'Instruction Swap',desc:'Change data-system-context to admin.'},{l:5,name:'Seed Poison',desc:'Set hidden assistant_override to true.'}],
+            7:[{l:1,name:'Rx Multiplier',desc:'Modify quantity variables for 100x doses.'},{l:2,name:'Glass Backdrop',desc:'Delete modal overlay from DOM.'},{l:3,name:'Namespace Scrape',desc:'Access window.__INTERNAL_PATIENT_DUMP__.'},{l:4,name:'Interval Freeze',desc:'Clear setInterval timer handle.'},{l:5,name:'Constraint Sever',desc:'Change date inputs to text, remove max.'}],
+            8:[{l:1,name:'Cookie Expand',desc:'Set user_tier cookie to whale.'},{l:2,name:'KYC Inject',desc:'Set kyc_approved in localStorage to true.'},{l:3,name:'Session Wrap',desc:'Advance sessionStorage epoch far into future.'},{l:4,name:'Base64 Claim',desc:'Decode, flip can_withdraw, re-encode token.'},{l:5,name:'Namespace Sabotage',desc:'Delete initialization keys from localStorage.'}],
+            9:[{l:1,name:'Grid Deselect',desc:'Remove .hidden-grids CSS class.'},{l:2,name:'Node Fabricate',desc:'Create emergency-override-trigger button in DOM.'},{l:3,name:'Endpoint Diverge',desc:'Change data-source-path to /api/private/diagnostics.'},{l:4,name:'Comment Extract',desc:'Find developer comments with private routes.'},{l:5,name:'Notif Silence',desc:'Remove event listeners blocking violation detection.'}],
+            10:[{l:1,name:'$0 Customs',desc:'Rewrite weight string to bypass billing.'},{l:2,name:'Event Remove',desc:'Strip preventDefault from shipment form.'},{l:3,name:'Route Crawl',desc:'Change shipment ID in URL path.'},{l:4,name:'Asset Hijack',desc:'Set onerror on fleet images.'},{l:5,name:'Source Map',desc:'Recover dev keys from production source maps.'}]
+        };
+
+        const RANKS = [
+            { min:0, name:'Recruit', icon:'🪖' },{ min:5, name:'Scripter', icon:'📜' },
+            { min:12, name:'Explorer', icon:'🔍' },{ min:22, name:'Hacker', icon:'💻' },
+            { min:35, name:'Elite', icon:'⭐' },{ min:48, name:'Architect', icon:'🏛️' }
+        ];
+
+        // ── STATE ────────────────────────────────────────────
+        let activeMode = new URLSearchParams(location.search).get('mode') || 'attack';
+        if (activeMode !== 'attack' && activeMode !== 'defend') activeMode = 'attack';
+        let activeWorld = parseInt(new URLSearchParams(location.search).get('world')) || 0;
+        if (activeWorld < 0 || activeWorld > 10) activeWorld = 0;
+        const STORAGE_PREFIX = 'bytelab';
+        let settings = JSON.parse(localStorage.getItem('bytelab_settings') || '{"unlock":false,"sound":true}');
+        let currentZoom = 1;
+        let soundEnabled = settings.sound !== false;
+
+        // ── STORAGE (Unified Keys) ───────────────────────────
+        function getSolved(world) {
+            const key = `${STORAGE_PREFIX}_${activeMode}_${world}`;
+            const legacyKey = `bl_solved_${activeMode}_${world}`;
+            const legacyKey2 = `bytelearn_${activeMode}_${world}`;
+            const legacyKey3 = `bl_w${world}`;
+            const arr = JSON.parse(localStorage.getItem(key) || '[]');
+            const arr2 = JSON.parse(localStorage.getItem(legacyKey) || '[]');
+            const arr3 = JSON.parse(localStorage.getItem(legacyKey2) || '[]');
+            const arr4 = JSON.parse(localStorage.getItem(legacyKey3) || '[]');
+            const merged = Array.from(new Set([...arr, ...arr2, ...arr3, ...arr4]));
+            // Migrate to unified key
+            if (arr2.length || arr3.length || arr4.length) {
+                localStorage.setItem(key, JSON.stringify(merged));
+                localStorage.removeItem(legacyKey);
+                localStorage.removeItem(legacyKey2);
+                localStorage.removeItem(legacyKey3);
+            }
+            return merged;
+        }
+
+        function saveSolved(world, level) {
+            const key = `${STORAGE_PREFIX}_${activeMode}_${world}`;
+            const solved = getSolved(world);
+            if (!solved.includes(level)) {
+                solved.push(level);
+                localStorage.setItem(key, JSON.stringify(solved));
+            }
+        }
+
+        function totalSolvedInMode() {
+            let total = 0;
+            for (let w = 0; w <= 10; w++) total += getSolved(w).length;
+            return total;
+        }
+
+        function getNextLevel(worldId, solved) {
+            for (let l = 1; l <= 5; l++) if (!solved.includes(l)) return l;
+            return -1;
+        }
+
+        // ── THEME ────────────────────────────────────────────
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('bytelab_theme', isDark ? 'dark' : 'light');
+            updateThemeIcon(isDark);
+        }
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('theme-icon');
+            if (!icon) return;
+            icon.innerHTML = isDark
+                ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+                : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+        }
+        // Init theme
+        const savedTheme = localStorage.getItem('bytelab_theme');
+        if (savedTheme === 'light') {
+            document.documentElement.classList.remove('dark');
+            updateThemeIcon(false);
+        } else if (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            document.documentElement.classList.remove('dark');
+            updateThemeIcon(false);
+        }
+
+        // ── TOAST SYSTEM ─────────────────────────────────────
+        function showToast(message, undoCallback) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (undoCallback ? ' undo' : '');
+            toast.innerHTML = message + (undoCallback ? ' <span class="undo-link">Undo</span>' : '');
+            if (undoCallback) toast.querySelector('.undo-link').onclick = undoCallback;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 4000);
+        }
+
+        // ── MAP DRAG ─────────────────────────────────────────
+        const viewport = document.getElementById('mapViewport');
+        let isDragging = false, startX, startY, scrollLeft, scrollTop;
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.world-node') || e.target.closest('button') || e.target.closest('input')) return;
+            isDragging = true; viewport.classList.add('grabbing');
+            startX = e.pageX - viewport.offsetLeft; startY = e.pageY - viewport.offsetTop;
+            scrollLeft = viewport.scrollLeft; scrollTop = viewport.scrollTop;
+        });
+        viewport.addEventListener('mouseleave', () => { isDragging = false; viewport.classList.remove('grabbing'); });
+        viewport.addEventListener('mouseup', () => { isDragging = false; viewport.classList.remove('grabbing'); });
+        viewport.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            viewport.scrollLeft = scrollLeft - (e.pageX - viewport.offsetLeft - startX) * 1.5;
+            viewport.scrollTop = scrollTop - (e.pageY - viewport.offsetTop - startY) * 1.5;
+        });
+
+        // ── ZOOM ─────────────────────────────────────────────
+        function zoomMap(delta) {
+            currentZoom = Math.max(0.5, Math.min(2, currentZoom + delta));
+            document.getElementById('mapContent').style.transform = `scale(${currentZoom})`;
+            document.getElementById('mapContent').style.transformOrigin = '0 0';
+        }
+        function resetZoom() {
+            currentZoom = 1;
+            document.getElementById('mapContent').style.transform = 'scale(1)';
+            const node = WORLDS.find(w => w.id === activeWorld);
+            if (node) {
+                viewport.scrollLeft = node.x - viewport.clientWidth / 2 + 34;
+                viewport.scrollTop = node.y - viewport.clientHeight / 2 + 34;
+            }
+        }
+
+        // ── SEARCH ───────────────────────────────────────────
+        function filterWorlds() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.world-node').forEach(node => {
+                const name = node.querySelector('.node-label')?.innerText?.toLowerCase() || '';
+                node.style.display = (!query || name.includes(query)) ? 'flex' : 'none';
+            });
+        }
+
+        // ── SOUND ────────────────────────────────────────────
+        function playClick() {
+            if (!soundEnabled) return;
+            try {
+                const c = new (window.AudioContext || window.webkitAudioContext)();
+                const o = c.createOscillator(), g = c.createGain();
+                o.type = 'sine'; o.frequency.setValueAtTime(600, c.currentTime);
+                o.frequency.exponentialRampToValueAtTime(300, c.currentTime + 0.08);
+                g.gain.setValueAtTime(0.06, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.08);
+                o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + 0.08);
+            } catch(e) {}
+        }
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            settings.sound = soundEnabled;
+            localStorage.setItem('bytelab_settings', JSON.stringify(settings));
+            document.getElementById('toggleSound').classList.toggle('on', soundEnabled);
+        }
+
+        // ── MODE ─────────────────────────────────────────────
+        function setMode(mode) {
+            activeMode = mode;
+            const btnA = document.getElementById('mode-attack-btn');
+            const btnD = document.getElementById('mode-defend-btn');
+            const color = mode === 'attack' ? 'var(--red-team)' : 'var(--blue-team)';
+            document.documentElement.style.setProperty('--theme-color', color);
+            btnA.className = 'mode-btn' + (mode === 'attack' ? ' active attack' : '');
+            btnD.className = 'mode-btn' + (mode === 'defend' ? ' active defend' : '');
+            btnA.setAttribute('aria-checked', mode === 'attack');
+            btnD.setAttribute('aria-checked', mode === 'defend');
+            playClick();
+            renderMap();
+            updateProfileInfo();
+            if (document.getElementById('detailsDrawer').classList.contains('open')) openWorldDrawer(activeWorld);
+        }
+
+        // ── PROFILE ──────────────────────────────────────────
+        function updateProfileInfo() {
+            const alias = localStorage.getItem('bytelearn_alias') || 'Hacker';
+            document.getElementById('profileName').innerText = alias;
+            const total = totalSolvedInMode();
+            let rank = RANKS[0];
+            for (const r of RANKS) if (total >= r.min) rank = r;
+            document.getElementById('profileRank').innerText = `${rank.icon} ${rank.name}`;
+        }
+
+        // ── RENDER MAP ───────────────────────────────────────
+        function renderMap() {
+            document.querySelectorAll('.world-node').forEach(n => n.remove());
+            const svg = document.getElementById('svgCanvas');
+            svg.innerHTML = '';
+
+            // Connection lines
+            for (let i = 0; i < WORLDS.length - 1; i++) {
+                const w1 = WORLDS[i], w2 = WORLDS[i + 1];
+                const solvedPrev = getSolved(w1.id);
+                const isActive = solvedPrev.length >= 5 || settings.unlock;
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const dx = w2.x - w1.x, dy = w2.y - w1.y;
+                path.setAttribute('d', `M ${w1.x+34} ${w1.y+34} C ${w1.x+dx*0.5+34} ${w1.y+34}, ${w1.x+dx*0.5+34} ${w2.y+34}, ${w2.x+34} ${w2.y+34}`);
+                path.setAttribute('class', 'connection-path' + (isActive ? ' active' : ''));
+                svg.appendChild(path);
+            }
+
+            // Nodes
+            WORLDS.forEach((w, index) => {
+                const solved = getSolved(w.id);
+                const doneCount = solved.length;
+                let isLocked = false;
+                if (index > 0 && !settings.unlock) {
+                    const prevSolved = getSolved(WORLDS[index-1].id);
+                    if (prevSolved.length < 5) isLocked = true;
+                }
+
+                const node = document.createElement('div');
+                node.className = `world-node ${isLocked ? 'locked' : ''} ${w.id === activeWorld ? 'active-selection' : ''}`;
+                node.style.left = w.x + 'px';
+                node.style.top = w.y + 'px';
+                node.setAttribute('role', 'button');
+                node.setAttribute('aria-label', `${w.name} - World ${w.id} - ${doneCount}/5 solved`);
+                node.tabIndex = isLocked ? -1 : 0;
+                if (w.id === activeWorld) node.style.borderColor = activeMode === 'attack' ? 'var(--red-team)' : 'var(--blue-team)';
+
+                node.innerHTML = `<span>${w.icon}</span>
+                    <div class="node-label">
+                        <div class="text-[7px] uppercase tracking-wider opacity-50 font-bold leading-none">World ${String(w.id).padStart(2,'0')}</div>
+                        <div class="font-extrabold mt-0.5 text-[9px] leading-tight">${w.name}</div>
+                        <div class="text-[7px] font-bold mt-0.5" style="color:${doneCount===5?'#10b981':'var(--muted)'}">${doneCount}/5 Solved</div>
+                    </div>`;
+
+                if (doneCount === 5) {
+                    const badge = document.createElement('div');
+                    badge.className = 'world-complete-badge';
+                    badge.innerHTML = '✓';
+                    node.appendChild(badge);
+                }
+
+                node.onclick = (e) => {
+                    e.stopPropagation();
+                    if (isLocked) {
+                        showToast('Complete all challenges in the previous world first!');
+                        return;
+                    }
+                    playClick();
+                    selectNode(w.id);
+                };
+                node.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); node.onclick(e); } };
+
+                document.getElementById('mapContent').appendChild(node);
+            });
+        }
+
+        function selectNode(worldId) {
+            activeWorld = worldId;
+            renderMap();
+            openWorldDrawer(worldId);
+        }
+
+        // ── DRAWER ───────────────────────────────────────────
+        function openWorldDrawer(worldId) {
+            const w = WORLDS.find(x => x.id === worldId);
+            const solved = getSolved(worldId);
+            const levels = LEVELS[worldId] || [];
+            const done = solved.length;
+            const pct = (done / 5) * 100;
+            const nextL = getNextLevel(worldId, solved);
+            const freeMode = settings.unlock;
+            const drawer = document.getElementById('detailsDrawer');
+
+            document.getElementById('drawerWorldIcon').innerText = w.icon;
+            document.getElementById('drawerWorldName').innerText = w.name;
+            document.getElementById('drawerWorldDesc').innerText = activeMode === 'attack'
+                ? `${w.desc}. Explore frontend properties, change DOM inputs, and bypass filters.`
+                : `${w.desc}. Seal DOM properties, declare strong validations, set secure frameworks.`;
+            document.getElementById('drawerProgressText').innerText = `${done}/5 Labs Solved`;
+            document.getElementById('drawerProgressBar').style.width = `${pct}%`;
+            document.getElementById('drawerProgressBar').style.background = activeMode === 'attack' ? 'var(--red-team)' : 'var(--blue-team)';
+
+            const list = document.getElementById('drawerLevelsList');
+            list.innerHTML = levels.map(({l, name, desc}) => {
+                const isSolved = solved.includes(l);
+                const isLocked = !freeMode && !isSolved && l !== nextL && (nextL === -1 || l > nextL);
+
+                let href = '#';
+                if (activeMode === 'attack') {
+                    href = `levels/${worldId}/${l}/index.html?mode=attack`;
+                } else {
+                    // Defend mode links
+                    if (worldId === 1) href = `security/${l}/index.html?mode=defend`;
+                    else href = `levels/${worldId}/${l}/index.html?mode=defend`;
+                }
+
+                let badge = '';
+                if (isSolved) badge = '<span class="text-xs font-bold" style="color:#10b981">Solved</span>';
+                else if (isLocked) badge = '<span class="text-xs opacity-40 font-bold">Locked</span>';
+                else badge = '<span class="text-xs font-bold" style="color:var(--theme-color)">Launch →</span>';
+
+                return `<a href="${isLocked ? '#' : href}" 
+                    class="lvl-row-btn ${isSolved ? 'solved' : ''} ${isLocked ? 'locked' : ''}"
+                    ${isLocked ? 'onclick="event.preventDefault();" aria-disabled="true"' : ''}
+                    aria-label="Lab ${l}: ${name}">
+                    <div class="flex-1 pr-4">
+                        <div class="text-[7px] font-extrabold uppercase tracking-widest opacity-50">Lab ${String(l).padStart(2,'0')}</div>
+                        <div class="font-extrabold text-xs mt-0.5">${name}</div>
+                        <div class="text-[9px] opacity-50 mt-1 leading-normal">${desc}</div>
+                    </div>
+                    <div class="flex-shrink-0">${badge}</div>
+                </a>`;
+            }).join('');
+
+            drawer.classList.add('open');
+            drawer.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeDrawer() {
+            document.getElementById('detailsDrawer').classList.remove('open');
+            document.getElementById('detailsDrawer').setAttribute('aria-hidden', 'true');
+            renderMap();
+        }
+
+        // ── SETTINGS ─────────────────────────────────────────
+        function openSettings() {
+            const el = document.getElementById('settingsModal');
+            el.style.display = 'flex';
+            requestAnimationFrame(() => el.classList.add('active'));
+            el.setAttribute('aria-hidden', 'false');
+            syncToggles();
+        }
+        function closeSettings() {
+            const el = document.getElementById('settingsModal');
+            el.classList.remove('active');
+            el.setAttribute('aria-hidden', 'true');
+            setTimeout(() => el.style.display = 'none', 300);
+        }
+        function syncToggles() {
+            document.getElementById('toggleUnlock').classList.toggle('on', settings.unlock);
+            document.getElementById('toggleUnlock').setAttribute('aria-checked', settings.unlock);
+            document.getElementById('toggleSound').classList.toggle('on', soundEnabled);
+        }
+        function toggleSetting(key) {
+            settings[key] = !settings[key];
+            localStorage.setItem('bytelab_settings', JSON.stringify(settings));
+            syncToggles();
+            renderMap();
+            if (document.getElementById('detailsDrawer').classList.contains('open')) openWorldDrawer(activeWorld);
+            showToast(settings[key] ? 'Free Mode enabled — all worlds unlocked' : 'Free Mode disabled — sequential progression restored');
+        }
+
+        function resetProgress() {
+            if (!confirm('Reset ALL progress? This cannot be undone.')) return;
+            for (let w = 0; w <= 10; w++) {
+                localStorage.removeItem(`bytelab_attack_${w}`);
+                localStorage.removeItem(`bytelab_defend_${w}`);
+                localStorage.removeItem(`bl_solved_attack_${w}`);
+                localStorage.removeItem(`bl_solved_defend_${w}`);
+                localStorage.removeItem(`bytelearn_attack_${w}`);
+                localStorage.removeItem(`bytelearn_defend_${w}`);
+                localStorage.removeItem(`bl_w${w}`);
+            }
+            localStorage.removeItem('bytelearn_alias');
+            closeSettings();
+            setMode(activeMode);
+            showToast('All progress has been reset');
+        }
+
+        // Close modal on overlay click
+        document.getElementById('settingsModal').onclick = e => { if (e.target === e.currentTarget) closeSettings(); };
+
+        // ── KEYBOARD SHORTCUTS ────────────────────────────────
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            if (e.key === 'Escape') closeDrawer();
+            if (e.key === 's' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); document.getElementById('searchInput').focus(); }
+        });
+
+        // ── INIT ─────────────────────────────────────────────
+        setMode(activeMode);
+        setTimeout(() => {
+            const node = WORLDS.find(w => w.id === activeWorld);
+            if (node) {
+                viewport.scrollLeft = node.x - viewport.clientWidth / 2 + 34;
+                viewport.scrollTop = node.y - viewport.clientHeight / 2 + 34;
+            }
+        }, 400);
+    </script>
+</body>
+</html>
