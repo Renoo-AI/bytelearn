@@ -491,6 +491,173 @@ const ByteLab = (function() {
         return { stop() { done = true; } };
     }
 
+    // ── VICTORY / LOSE OVERLAYS ──────────────────
+
+    function showVictory(data) {
+        const d = data || {};
+        const title = d.title || 'CHALLENGE COMPLETE';
+        const subtitle = d.subtitle || 'You found the vulnerability!';
+        const xp = d.xp || 10;
+        const what = d.what || 'You identified and exploited a client-side security flaw.';
+        const lesson = d.lesson || 'Never trust client-side validation. Always enforce security server-side.';
+        const onNext = d.onNext || (() => {});
+        const onStay = d.onStay || (() => removeOverlay('victory'));
+
+        removeOverlay('victory');
+
+        const overlay = document.createElement('div');
+        overlay.id = 'bl-victory-overlay';
+        overlay.className = 'bl-overlay';
+        overlay.innerHTML = `
+            <div class="bl-overlay-bg"></div>
+            <div class="bl-confetti" id="bl-confetti"></div>
+            <div class="bl-victory-card">
+                <div class="bl-victory-trophy">
+                    <svg viewBox="0 0 120 120" fill="none">
+                        <circle cx="60" cy="60" r="55" fill="rgba(255,215,0,0.08)" stroke="#FFD700" stroke-width="2"/>
+                        <path d="M60 20L70 45L98 48L77 67L83 93L60 79L37 93L43 67L22 48L50 45L60 20Z" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+                        <path d="M60 32L66 46L82 49L70 58L73 73L60 65L47 73L50 58L38 49L54 46L60 32Z" fill="#FFF3CD"/>
+                        <rect x="50" y="92" width="20" height="8" rx="2" fill="#FFD700"/>
+                        <rect x="42" y="100" width="36" height="5" rx="2" fill="#FFD700"/>
+                    </svg>
+                </div>
+                <h2 class="bl-victory-title">${title}</h2>
+                <p class="bl-victory-sub">${subtitle}</p>
+                <div class="bl-xp-badge">+${xp} XP</div>
+                <div class="bl-detail-box">
+                    <h4>What you did</h4>
+                    <p>${what}</p>
+                </div>
+                <div class="bl-detail-box lesson">
+                    <h4>Security Lesson</h4>
+                    <p>${lesson}</p>
+                </div>
+                <div class="bl-victory-btns">
+                    <button class="bl-btn-primary" id="bl-btn-next">Next Level →</button>
+                    <button class="bl-btn-ghost" id="bl-btn-stay">Review</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        // Wire buttons
+        overlay.querySelector('#bl-btn-next').onclick = onNext;
+        overlay.querySelector('#bl-btn-stay').onclick = onStay;
+
+        // Confetti burst
+        spawnConfetti();
+
+        // Animate in
+        requestAnimationFrame(() => overlay.classList.add('active'));
+
+        // Play victory sound
+        Audio.chime();
+    }
+
+    function showLose(data) {
+        const d = data || {};
+        const title = d.title || 'NOT QUITE';
+        const subtitle = d.subtitle || 'The vulnerability is still hidden. Byte believes in you.';
+        const onRetry = d.onRetry || (() => { removeOverlay('lose'); location.reload(); });
+        const onQuit = d.onQuit || (() => { window.location.href = '../../../game.html'; });
+
+        removeOverlay('lose');
+
+        const overlay = document.createElement('div');
+        overlay.id = 'bl-lose-overlay';
+        overlay.className = 'bl-overlay';
+        overlay.innerHTML = `
+            <div class="bl-overlay-bg"></div>
+            <div class="bl-lose-card">
+                <div class="bl-lose-byte">
+                    <img src="${getMascotImage()}" alt="Byte" style="width:80px;height:80px;border-radius:50%;object-fit:contain;animation:blShake 0.8s ease">
+                </div>
+                <h2 class="bl-lose-title">${title}</h2>
+                <p class="bl-lose-sub">${subtitle}</p>
+                <div class="bl-victory-btns">
+                    <button class="bl-btn-retry" id="bl-btn-retry">Try Again</button>
+                    <button class="bl-btn-ghost" id="bl-btn-quit">Back to Hub</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.querySelector('#bl-btn-retry').onclick = onRetry;
+        overlay.querySelector('#bl-btn-quit').onclick = onQuit;
+
+        requestAnimationFrame(() => overlay.classList.add('active'));
+        Audio.error();
+    }
+
+    function removeOverlay(type) {
+        const el = document.getElementById('bl-' + type + '-overlay');
+        if (el) {
+            el.classList.remove('active');
+            setTimeout(() => el.remove(), 300);
+        }
+    }
+
+    function spawnConfetti() {
+        const box = document.getElementById('bl-confetti');
+        if (!box) return;
+        const colors = ['#FFD700','#FFA500','#FFC107','#FFB300','#FF8F00','#FFD54F','#FFE082','#6366f1','#10b981'];
+        for (let i = 0; i < 90; i++) {
+            const p = document.createElement('div');
+            p.className = 'bl-confetti-piece';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.background = colors[Math.floor(Math.random() * colors.length)];
+            p.style.width = (4 + Math.random() * 8) + 'px';
+            p.style.height = (4 + Math.random() * 8) + 'px';
+            p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+            p.style.animationDuration = (2 + Math.random() * 3) + 's';
+            p.style.animationDelay = Math.random() * 1.2 + 's';
+            box.appendChild(p);
+        }
+    }
+
+    // ── OVERLAY STYLES (injected once) ────────────
+    function injectOverlayStyles() {
+        if (document.getElementById('bl-overlay-styles')) return;
+        const s = document.createElement('style');
+        s.id = 'bl-overlay-styles';
+        s.textContent = `
+            .bl-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s}
+            .bl-overlay.active{opacity:1;pointer-events:auto}
+            .bl-overlay-bg{position:absolute;inset:0;background:rgba(5,5,15,.88);backdrop-filter:blur(12px)}
+            .bl-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+            .bl-confetti-piece{position:absolute;top:-20px;animation:blConfettiFall linear forwards}
+            @keyframes blConfettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+            .bl-victory-card,.bl-lose-card{position:relative;z-index:2;background:#0f0f23;border-radius:28px;padding:36px 32px;max-width:440px;width:90%;text-align:center;border:1px solid rgba(255,215,0,.12);box-shadow:0 0 80px rgba(255,215,0,.06),inset 0 0 60px rgba(255,215,0,.015);transform:scale(.85);transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+            .bl-overlay.active .bl-victory-card,.bl-overlay.active .bl-lose-card{transform:scale(1)}
+            .bl-lose-card{border-color:rgba(239,68,68,.15);box-shadow:0 0 60px rgba(239,68,68,.04)}
+            .bl-victory-trophy{width:90px;height:90px;margin:0 auto 14px;animation:blTrophyBounce .7s cubic-bezier(.34,1.56,.64,1)}
+            .bl-victory-trophy svg{width:100%;height:100%;filter:drop-shadow(0 0 24px rgba(255,215,0,.3))}
+            @keyframes blTrophyBounce{0%{transform:scale(0) rotate(-15deg)}60%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+            .bl-victory-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:900;background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:2px;letter-spacing:-1px}
+            .bl-victory-sub{color:#94a3b8;font-size:.85rem;margin-bottom:12px}
+            .bl-xp-badge{display:inline-block;background:rgba(255,215,0,.1);color:#FFD700;padding:5px 20px;border-radius:99px;font-weight:800;font-size:.95rem;margin-bottom:16px;border:1px solid rgba(255,215,0,.15)}
+            .bl-detail-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:14px 16px;margin-bottom:10px;text-align:left}
+            .bl-detail-box h4{font-size:.72rem;font-weight:800;color:#FFD700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+            .bl-detail-box p{font-size:.78rem;color:#94a3b8;line-height:1.5}
+            .bl-detail-box.lesson h4{color:#6366f1}
+            .bl-victory-btns{display:flex;gap:8px;margin-top:16px}
+            .bl-btn-primary,.bl-btn-retry,.bl-btn-ghost{flex:1;padding:13px 20px;border-radius:14px;font-weight:800;font-size:.85rem;border:none;cursor:pointer;transition:all .2s}
+            .bl-btn-primary{background:linear-gradient(135deg,#FFD700,#FFA500);color:#0f0f23;box-shadow:0 4px 18px rgba(255,215,0,.15)}
+            .bl-btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(255,215,0,.25)}
+            .bl-btn-retry{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
+            .bl-btn-retry:hover{background:rgba(239,68,68,.2);transform:translateY(-2px)}
+            .bl-btn-ghost{background:rgba(255,255,255,.04);color:#94a3b8;border:1px solid rgba(255,255,255,.06)}
+            .bl-btn-ghost:hover{background:rgba(255,255,255,.08);color:#fff}
+            .bl-lose-byte{margin-bottom:14px}
+            .bl-lose-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.8rem;font-weight:900;color:#ef4444;margin-bottom:4px}
+            .bl-lose-sub{color:#94a3b8;font-size:.85rem;margin-bottom:18px;line-height:1.5}
+        `;
+        document.head.appendChild(s);
+    }
+
+    // Inject styles immediately
+    injectOverlayStyles();
+
     function watchGlobal(varName, expected, callback) {
         let done = false;
         function check() {
@@ -533,7 +700,9 @@ const ByteLab = (function() {
         isFileProtocol, REAL_COOKIES_WORK,
         // Byte Assistant
         getHint, getCurrentHintIndex, advanceHintIndex,
-        createAssistantPopup, initByteAssistant
+        createAssistantPopup, initByteAssistant,
+        // Victory / Lose
+        showVictory, showLose, removeOverlay
     };
 
 })();

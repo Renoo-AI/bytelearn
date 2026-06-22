@@ -120,32 +120,29 @@ function startLevel() {
 	  setupDetection();
 	}
 function handleWin() {
-  // Save progress
-  const solved = JSON.parse(localStorage.getItem('bytelearn_attack_2') || '[]');
-  if (!solved.includes(1)) {
-      solved.push(1);
-      localStorage.setItem('bytelearn_attack_2', JSON.stringify(solved));
-  }
-  if (hasWon) return;
-  hasWon = true;
-  clearTimeout(hintTimeout); clearTimeout(talkTimeout);
-  if (window.parent) window.parent.postMessage({ type: 'LEVEL_COMPLETE', world: 2, level: 1 }, '*');
-  setTimeout(function() {
-    if (cardEl) cardEl.classList.add('card-exit');
-    assistant.classList.add('victory-move');
-    mascot.src = BYTE_PC;
-    speak('Cookie modified. You\'re premium now. The server believed you.', true);
-    setTimeout(function() {
-      fillBar.style.width = '20%';
-      progLabel.innerText = '1/5';
-      progLabel.style.color = '#e50914';
-      setTimeout(function() {
-        transition.style.opacity = '1';
-        setTimeout(function(){ window.location.href = '../2/index.html'; }, 800);
-      }, 2500);
-    }, 800);
-  }, 1000);
-}
+	  ByteLab.saveSolved(2, 1, 'attack');
+	  if (hasWon) return;
+	  hasWon = true;
+	  clearTimeout(hintTimeout); clearTimeout(talkTimeout);
+	  
+	  if (cardEl) cardEl.classList.add('card-exit');
+	  assistant.classList.add('victory-move');
+	  mascot.src = BYTE_PC;
+	  fillBar.style.width = '20%';
+	  progLabel.innerText = '1/5';
+	  progLabel.style.color = '#e50914';
+	  
+	  // Show premium victory overlay
+	  ByteLab.showVictory({
+	      title: 'TIER UPGRADED',
+	      subtitle: 'You escalated your cookie to premium access!',
+	      xp: 15,
+	      what: 'Modified your browser cookie from <b>tier=free</b> to <b>tier=premium</b>. The server trusted the client-side cookie value without server-side verification.',
+	      lesson: 'Never trust cookies for authorization. Always validate user permissions server-side. Cookies can be edited by anyone with DevTools.',
+	      onNext: function() { transition.style.opacity = '1'; setTimeout(function(){ window.location.href = '../2/index.html'; }, 600); },
+	      onStay: function() { ByteLab.removeOverlay('victory'); }
+	  });
+	}
 function quit() { transition.style.opacity = '1'; setTimeout(function(){ window.location.href = '../../../game.html'; }, 600); }
 
 function setupDetection() {
