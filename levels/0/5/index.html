@@ -77,8 +77,8 @@
         function speak(txt,p){clearTimeout(t);TALK.innerText=txt;BUB.classList.remove('hidden-msg');if(!p)t=setTimeout(()=>BUB.classList.add('hidden-msg'),6000)}
         window.onload=()=>setTimeout(()=>TRANS.style.opacity='0',500)
         function startLevel(){STORY.style.display='none';HEAD.classList.replace('opacity-0','opacity-100');ASST.style.opacity='1';ASST.style.transform='translateY(0)';document.getElementById('card').style.opacity='1';document.getElementById('card').style.transform='translateY(0)';speak('Look closely. The answer is in the code.')}
-        document.getElementById('btn-check').onclick=()=>speak('Not yet. Keep inspecting.')
-        function quit(){TRANS.style.opacity='1';setTimeout(()=>window.location.href = '../../../game.html',600)}
+	        document.getElementById('btn-check').onclick=()=>{if(!hasWon){hasWon=true;const s=JSON.parse(localStorage.getItem('bytelab_attack_0')||'[]');if(!s.includes(5)){s.push(5);localStorage.setItem('bytelab_attack_0',JSON.stringify(s))}speak('Tutorial complete! Advancing to World 1...',true);setTimeout(()=>{TRANS.style.opacity='1';setTimeout(()=>window.location.href='../../1/1/index.html',600)},2000)}}
+	        function quit(){TRANS.style.opacity='1';setTimeout(()=>window.location.href = '../../../game.html',600)}
     </script>
 </body>
 </html>

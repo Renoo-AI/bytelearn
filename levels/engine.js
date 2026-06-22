@@ -154,6 +154,12 @@
 
     let state = { world:1, level:1, mode:'attack', lang:'en', hasWon:false, observer:null, watchInterval:null };
 
+    const WORLDS = [
+        { id:0, icon:'🎓' },{ id:1, icon:'🏦' },{ id:2, icon:'🎬' },{ id:3, icon:'🛒' },
+        { id:4, icon:'🚀' },{ id:5, icon:'✈️' },{ id:6, icon:'🤖' },{ id:7, icon:'🏥' },
+        { id:8, icon:'💎' },{ id:9, icon:'⚡' },{ id:10, icon:'📦' }
+    ];
+
     const AudioEngine = {
         ctx:null, init(){if(!this.ctx)this.ctx=new(window.AudioContext||window.webkitAudioContext)()},
         playPop(){this.init();const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(400,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(800,this.ctx.currentTime+.12);g.gain.setValueAtTime(.08,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+.12);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+.12)},
@@ -259,6 +265,56 @@
     };
 
     function renderPlayPhase(){renderLeftCard();renderRightControls()}
+
+    function renderLeftCard(){
+        const data = getRoomData();
+        const panel = document.getElementById('left-play-panel');
+        if (!panel) return;
+        panel.innerHTML = `
+<div style="text-align:center;max-width:440px;width:100%;animation:popIn .5s forwards">
+    <div style="font-size:2.5rem;margin-bottom:12px">${WORLDS[state.world]?.icon || '🎯'}</div>
+    <h2 style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;margin-bottom:4px">${data.title}</h2>
+    <p style="color:var(--secondary);font-size:.85rem;margin-bottom:24px;line-height:1.5">${data.desc}</p>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px">
+        <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--primary);margin-bottom:8px">Challenge Target</div>
+        <div id="challenge-target" style="font-family:monospace;font-size:.85rem;color:var(--text);line-height:1.6">
+            🔍 Inspect this page using DevTools (F12).<br>
+            Look for hidden elements, disabled controls,<br>
+            or modifiable values in the DOM.
+        </div>
+    </div>
+</div>`;
+    }
+
+    function renderRightControls(){
+        const data = getRoomData();
+        const panel = document.getElementById('right-control-panel');
+        if (!panel) return;
+        panel.innerHTML = `
+<div style="display:flex;flex-direction:column;gap:16px;animation:slideFadeIn .5s forwards">
+    <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:16px;padding:16px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="width:24px;height:24px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.7rem;flex-shrink:0">!</span>
+            <div>
+                <span style="font-weight:800;font-size:.8rem;color:var(--primary)">Objective</span>
+                <p style="font-size:.8rem;color:#4338ca;margin-top:2px;line-height:1.4">${data.objective}</p>
+            </div>
+        </div>
+    </div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:16px">
+        <span style="font-weight:800;font-size:.75rem;color:var(--secondary);text-transform:uppercase">Hints</span>
+        <ul style="margin:8px 0 0 16px;font-size:.8rem;color:var(--secondary);line-height:1.6">
+            <li>Open DevTools with <strong>F12</strong> or <strong>Ctrl+Shift+I</strong></li>
+            <li>Use the <strong>Elements</strong> tab to inspect the page</li>
+            <li>Try the <strong>Console</strong> to run JavaScript</li>
+            <li>Check <strong>Application → Cookies</strong> for stored data</li>
+        </ul>
+    </div>
+</div>`;
+        // Add log
+        const log = document.getElementById('terminal-logs');
+        if (log) log.innerHTML += '<div class="log-row info">&gt; Challenge loaded. Awaiting your exploit...</div>';
+    }
 
     console.log('[ByteLab Engine v3] Loaded for W'+state.world+'L'+state.level+' mode:'+state.mode);
 })();
