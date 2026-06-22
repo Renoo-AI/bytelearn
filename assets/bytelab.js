@@ -96,120 +96,120 @@ const ByteLab = (function() {
     // Rich hint database + popup actions on mascot click
 
     const HINTS = {
-        0: { // Discovery
-            1: ['Inspect the bank card element. Something is hidden with display:none.',
-                'Right-click anywhere and choose Inspect. Look for #real-balance.',
-                'Change display:none to display:block on the balance element.'],
-            2: ['The upgrade price is just text on the page. Find it in the Elements tab.',
-                'Double-click the price in DevTools and change it to anything you want.',
-                'Modify the price THEN click Upgrade Now — the system reads the live DOM.'],
-            3: ['The Transfer button has TWO locks: disabled attribute AND a CSS class.',
-                'Remove disabled from the button tag, then find class="locked" and delete it.',
-                'Inspect the button, delete disabled, then remove locked from the class list.'],
-            4: ['Your role is stored in a data-role attribute on the app shell.',
-                'Find data-role="guest" and change it to data-role="admin".',
-                'Search for "data-role" in the Elements panel and edit it directly.'],
-            5: ['Look for hidden initialization variables in the page source.',
-                'Check the Console for any global config objects.',
-                'Inspect the page structure — the answer is in the metadata.']
+        0: {
+            1: ['Something on this page is hidden from view. Where might sensitive data be tucked away?',
+                'Check the Elements panel — look for an element that has a style making it invisible.',
+                'Find the element with display:none. What happens if you change none to block?'],
+            2: ['The price shown on screen is just text. What if you could edit it before the system reads it?',
+                'Right-click the price and choose Inspect. Double-click the number in the HTML.',
+                'Change the price in DevTools, THEN click the upgrade button. The system reads the live DOM.'],
+            3: ['The Transfer button looks clickable but something is blocking it. Check its attributes.',
+                'A button can be disabled in two ways: an HTML attribute AND a CSS class.',
+                'Inspect the button — remove disabled from the tag, then find and delete the locked class.'],
+            4: ['The dashboard treats you like a guest. But your role is written somewhere in the page.',
+                'Look for data attributes on the main container element. They often control permissions.',
+                'Search for data-role in the Elements panel. Change guest to admin.'],
+            5: ['The answer is hidden in the page structure itself. Look deeper than what you see.',
+                'Check for hidden input fields, comments in the HTML, or global JavaScript variables.',
+                'Right-click → View Page Source. Sometimes the answer is in a comment or a meta tag.']
         },
-        1: { // PayPal
-            1: ['The Transfer Funds menu item has a disabled attribute. Remove it.',
-                'Inspect the sidebar link — find disabled and delete it from the HTML.',
-                'Right-click the Transfer Funds item, choose Edit as HTML, remove disabled.'],
-            2: ['The menu is blocked by CSS pointer-events. Find the locked class.',
-                'Inspect the menu item and remove class="locked" from it.',
-                'In the Styles panel, uncheck the pointer-events: none rule.'],
-            3: ['The transaction fee is a hidden input. Find fee-amount in the DOM.',
-                'Change the hidden input value to a negative number like -150.',
-                'Search for type="hidden" in the Elements panel and modify the value.'],
-            4: ['The real balance is hidden with style="display:none". Find balance-real.',
-                'Remove the style attribute or change display:none to display:block.',
-                'Use Ctrl+F in Elements to search for balance-real.'],
-            5: ['Your role is in a data-role attribute. Change member to admin.',
-                'Find data-role="member" and edit it to data-role="admin".',
-                'The profile-node element holds your permissions — modify it.']
+        1: {
+            1: ['The Transfer Funds option is grayed out. HTML elements can be disabled — check its properties.',
+                'Inspect the Transfer Funds link in the sidebar. Look for an attribute that prevents clicking.',
+                'Find disabled on the menu item tag. Remove it to unlock the button.'],
+            2: ['Even after enabling the button, CSS can still block clicks. Check the element classes.',
+                'A CSS rule called pointer-events can make elements ignore mouse clicks entirely.',
+                'Find class=locked on the menu item. Delete locked from the class list.'],
+            3: ['Every transaction has a fee. That fee is stored somewhere in the form — find it.',
+                'Hidden inputs still exist in the DOM — they are just not visible on screen.',
+                'Search for type=hidden in the Elements panel. Change its value to a negative number.'],
+            4: ['The account overview shows dots instead of a real balance. The real number exists somewhere.',
+                'CSS can hide things from view without removing them from the page.',
+                'Look for an element with style=display:none. Remove that style to reveal the data.'],
+            5: ['Your account has a role that determines what you can see. Roles can be changed.',
+                'Data attributes on HTML elements often carry permission information.',
+                'Find data-role=member. What happens if you change member to admin?']
         },
-        2: { // Netflix
-            1: ['Your tier is stored in a cookie. Open the Console (F12 → Console tab).',
-                'Type: document.cookie = "tier=premium" and press Enter.',
-                'If on file://, type: ByteLab.setCookie("tier", "premium")'],
-            2: ['A paywall overlay blocks the video. Find subscription-overlay in Elements.',
-                'Right-click the overlay div and choose Delete Element.',
-                'The overlay is a DOM element like any other — you can delete it.'],
-            3: ['The Google SSO button has a data-redirect attribute pointing to a URL.',
-                'Change data-redirect to http://evil.com on the Google login button.',
-                'Inspect the SSO button and edit its dataset attribute.'],
-            4: ['The trial timer is a global variable. Open the Console.',
-                'Type: window.trialSecondsRemaining = 999999',
-                'Global variables are accessible from anywhere — override them.'],
-            5: ['Authorization checks use Object.prototype. Pollute it to bypass.',
-                'Type: Object.prototype.isAuthorized = true in the Console.',
-                'Prototype pollution affects ALL objects — use it carefully.']
+        2: {
+            1: ['Your streaming tier limits what you can watch. That tier is saved somewhere by your browser.',
+                'Open the Application tab in DevTools (F12). Look under Storage → Cookies.',
+                'Your tier is a key=value pair. What if the value changed from free to something better?'],
+            2: ['Something is covering the video player. But everything on a webpage is just HTML.',
+                'Inspect the overlay blocking the content. It is just a div element you can interact with.',
+                'Right-click the paywall overlay and choose Delete Element. What is underneath?'],
+            3: ['The Google login button sends you somewhere. That destination is configurable.',
+                'Buttons and links often store their target URLs in data attributes.',
+                'Inspect the SSO button and look for data-redirect. Where could you redirect it instead?'],
+            4: ['Your free trial has a countdown. That timer is controlled by something you can access.',
+                'JavaScript variables in the global scope can be read and written from the Console.',
+                'Type window in the Console and explore. Look for a variable related to time remaining.'],
+            5: ['Authorization checks compare your permissions against a baseline. What if you changed the baseline?',
+                'In JavaScript, all objects inherit from Object.prototype. Changing it affects everything.',
+                'Open the Console. What happens if you add a property to Object.prototype?']
         },
-        3: { // Amazon
-            1: ['The quantity input has a min="1" restriction. Remove it.',
-                'Change the quantity to -10 after removing the min attribute.',
-                'Inspect the number input, delete min, then type a negative value.'],
-            2: ['The shipping dropdown is locked to paid options. Inject a free one.',
-                'Right-click the select, Edit as HTML, add: <option value="0">Free</option>',
-                'Or use the Console to add a new option element to the select.'],
-            3: ['Sales tax comes from a hidden input. Find tax-rate in the DOM.',
-                'Change the hidden tax-rate value from 0.15 to 0.',
-                'Hidden inputs are still readable and writable — they just are not visible.'],
-            4: ['The coupon field has readonly. Remove that attribute first.',
-                'Then type FREE100 into the coupon input and proceed.',
-                'readonly prevents typing but does not protect the data.'],
-            5: ['The checkout form accepts any input fields. Add a discount field.',
-                'Inject: <input type="hidden" id="discount_value" value="500"> into the form.',
-                'The backend parses ALL form fields, including ones you add yourself.']
+        3: {
+            1: ['Your cart total seems fixed. But quantities are just numbers sent by your browser.',
+                'Inspect the quantity input field. Look for restrictions on what numbers are allowed.',
+                'What if you removed the minimum limit? Could a negative quantity reverse the charge?'],
+            2: ['Shipping costs are selected from a dropdown. Dropdowns are just HTML select elements.',
+                'Right-click the shipping dropdown and choose Edit as HTML. You can add new options.',
+                'Add an option with value=0 and the label Free. Select it before checkout.'],
+            3: ['Sales tax is calculated from a number stored on the page. Find where that number lives.',
+                'Hidden inputs carry data the user cannot see but the form still submits.',
+                'Search for tax-rate in the DOM. What happens if you change its value?'],
+            4: ['The coupon field refuses to let you type. That restriction is just an HTML attribute.',
+                'readonly is an attribute that prevents editing. Attributes can be removed.',
+                'Inspect the coupon input and delete the readonly attribute. Then try typing a discount code.'],
+            5: ['The checkout form sends all its fields to the server. What if you added your own field?',
+                'Forms collect all input elements inside them — even ones you create yourself.',
+                'Edit the form HTML and add a hidden input named discount_value. Set it to a high number.']
         },
-        4: { // SpaceX
-            1: ['Your user ID is in a cookie. Change it to 1 for admin access.',
-                'Type: document.cookie = "user_id=1" in the Console.',
-                'User ID 1 is typically the root administrator.'],
-            2: ['The gateway IP check uses a global variable. Override it.',
-                'Type: window.gatewayIp = "127.0.0.1" in the Console.',
-                'Making the system think you are localhost bypasses network checks.'],
-            3: ['The submit button has a data-endpoint attribute. Change the route.',
-                'Change data-endpoint to /v1/admin/shutdown on the save button.',
-                'The frontend decides where data goes — change the destination.'],
-            4: ['Origin validation uses window.originHeader. Spoof it.',
-                'Type: window.originHeader = "workspacex.com"',
-                'CORS checks on the client side can be bypassed easily.'],
-            5: ['SSO status is in localStorage. Set it to authorized.',
-                'Type: localStorage.setItem("auth_status", "authorized")',
-                'LocalStorage persists across page loads — check Application tab.']
+        4: {
+            1: ['The system knows who you are from a piece of stored data. Where does the browser keep user identity?',
+                'Open the Application tab in DevTools. Check what is stored under Cookies.',
+                'Your user ID is a number. What number would an administrator typically have?'],
+            2: ['The network gateway checks where requests come from. That check happens in JavaScript.',
+                'Global variables are accessible from anywhere. Type window. in the Console to explore.',
+                'Look for a variable related to IP address or gateway. Can you make the system think you are local?'],
+            3: ['The Save button sends data to a specific URL. That URL is stored right on the button itself.',
+                'HTML elements can carry custom data using data-* attributes. Inspect the button.',
+                'Find data-endpoint on the submit button. Change the path to an admin-only endpoint.'],
+            4: ['The server checks where requests originate from. That check uses a JavaScript variable.',
+                'CORS (Cross-Origin Resource Sharing) validation sometimes happens client-side.',
+                'Search for origin in the global scope. Can you impersonate the internal domain?'],
+            5: ['Single Sign-On status determines if you are logged in. That status is saved locally.',
+                'localStorage persists data across browser sessions. Check what is stored there.',
+                'Look for keys related to auth or session. Can you set yourself as authorized?']
         },
-        5: { // Airbnb
-            1: ['Date validation happens client-side. Reverse check-in and check-out.',
-                'Set check-out to a date BEFORE check-in for a negative stay.',
-                'Inspect the date inputs and swap their values.'],
-            2: ['Weight validation blocks text. Change type="number" to type="text".',
-                'Then type NaN into the weight field to bypass numeric checks.',
-                'NaN is technically not-a-number — it slips past max value checks.'],
-            3: ['First class seats are disabled. Remove disabled and change data-tier.',
-                'Set data-tier to economy on seat 1A to book it at a lower price.',
-                'The tier check compares what you send, not what the seat actually is.'],
-            4: ['The logo link href can be changed. Point it anywhere.',
-                'Change the logo anchor href to http://evil.com.',
-                'Open redirects let attackers send users to malicious sites.'],
-            5: ['Flight verification uses a global config object. Bypass it.',
-                'Set window.flightConfig.bypass_verification to true.',
-                'Configuration in global scope is never secure.']
+        5: {
+            1: ['Your booking duration is calculated from two dates. What if the dates were backwards?',
+                'Inspect the check-in and check-out date inputs. Try swapping which date is earlier.',
+                'Set the departure date BEFORE the arrival date. How does the system handle negative stays?'],
+            2: ['The weight limit blocks heavy luggage. But weight is checked as a number — what is not a number?',
+                'Input fields have types. A type=number field can be changed to accept different values.',
+                'Change the input type from number to text. Then type something that is not a number at all.'],
+            3: ['First class seats are locked for economy users. The seat tier is stored in the element itself.',
+                'Inspect a premium seat button. Look for disabled and data attributes controlling access.',
+                'Remove disabled and change the tier data attribute. Can you book a premium seat at economy price?'],
+            4: ['The company logo links to the homepage. Links can point anywhere you want.',
+                'Anchor tags have an href attribute determining their destination. Inspect the logo.',
+                'Change the logo href to an external URL. This is called an open redirect vulnerability.'],
+            5: ['Flight booking runs verification checks. Those checks are controlled by a configuration object.',
+                'Configuration objects in global scope can be modified by anyone with a Console.',
+                'Look for a config object related to flights. Is there a flag that bypasses verification?']
         }
-        // Worlds 6-10 use generic hints since they are engine-powered
+        // Worlds 6-10 use generic progressive hints
     };
 
     function getHint(world, level) {
         const worldHints = HINTS[world];
         if (!worldHints || !worldHints[level]) {
             return [
-                'Open DevTools with F12 and inspect the page elements.',
-                'Check the Console tab for global variables you can modify.',
-                'Look at the Application tab for cookies and localStorage items.',
-                'Right-click elements and choose Inspect to examine the DOM.',
-                'Try changing CSS properties, HTML attributes, or JavaScript variables.'
+                'Start by opening DevTools (F12). Look at the Elements tab — what do you see that seems unusual?',
+                'Check the Console tab for any global variables you can inspect. Type window. and explore.',
+                'Look at the Application tab — are there cookies, localStorage items, or session data you can modify?',
+                'Try right-clicking elements and choosing Inspect. Every visible (and hidden) element is in the DOM.',
+                'Think about what the challenge is asking you to do. Is there a value, attribute, or style you could change?'
             ];
         }
         return worldHints[level];
@@ -288,13 +288,19 @@ const ByteLab = (function() {
 
         // Wire up buttons
         popup.querySelector('#btn-hint').onclick = () => {
-            const hint = advanceHintIndex(world, level);
+            const hints = getHint(world, level);
+            const idx = (getCurrentHintIndex(world, level) + 1) % hints.length;
+            localStorage.setItem(`bytelab_hint_${world}_${level}`, String(idx));
+            const hint = hints[idx];
             const hintEl = popup.querySelector('#popup-hint-text');
             hintEl.style.display = 'block';
-            hintEl.innerHTML = `<strong>Hint:</strong> ${hint}`;
+            hintEl.innerHTML = `<strong>Hint ${idx + 1}/${hints.length}:</strong> ${hint}`;
+            // Update button text
+            popup.querySelector('#btn-hint').innerHTML = `<span>💡</span> Next Hint (${(idx + 1) % hints.length + 1}/${hints.length})`;
         };
 
         popup.querySelector('#btn-skip').onclick = () => {
+            if (!confirm('Skip this level? It will be marked as solved and you will advance to the next challenge.')) return;
             popup.remove();
             const s = getSolved(world, mode);
             if (!s.includes(level)) { s.push(level); saveSolved(world, level, mode); }

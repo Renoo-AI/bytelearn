@@ -113,13 +113,10 @@ function startLevel() {
 		  // SET THE INITIAL COOKIE so the player can modify it (file:// safe)
 		  ByteLab.setCookie('tier', 'free');
 		  
-		  if (ByteLab.isFileProtocol || !ByteLab.REAL_COOKIES_WORK) {
-		      speak('Running from file:// — use console: ByteLab.setCookie("tier", "premium")');
-		      hintTimeout = setTimeout(function(){ if (!hasWon) speak('Type: ByteLab.setCookie("tier", "premium")'); }, 15000);
-		  } else {
-		      speak('Your cookie says "free". Open your console and set document.cookie correctly.');
-		      hintTimeout = setTimeout(function(){ if (!hasWon) speak('document.cookie = "tier=premium"'); }, 20000);
-		  }
+		  speak('Your membership tier is stored somewhere. Check the Application tab or your Console — can you find it?');
+		  hintTimeout = setTimeout(function(){ 
+		      if (!hasWon) speak('Cookies are key=value pairs stored by the browser. Try looking at document.cookie...'); 
+		  }, 25000);
 	  setupDetection();
 	}
 function handleWin() {
